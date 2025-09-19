@@ -1,0 +1,12 @@
+project_id = "<YOUR_PROJECT_ID>"
+region     = "us-central1"
+user_email = "user@example.com"
+
+# Optional overrides (defaults are set in variables.tf)
+# service_account_id             = "test-sc-1-sa"
+# service_account_display_name   = "Test Scenario 1 Service Account"
+# bucket_name                    = "<custom-bucket-name>" # default: "<project_id>-test-sc-1-bucket"
+# cloud_run_service_name         = "test-sc-1-service"
+# image                          = "gcr.io/cloudrun/hello"
+# enable_gcs_volume              = false
+# gcs_mount_path                 = "/mnt/bucket"
