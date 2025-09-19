@@ -83,11 +83,13 @@ variable "env_vars" {
 }
 
 variable "volumes" {
-  description = "List of volumes to mount in the container (supports emptyDir and secret types)"
+  description = "List of volumes to mount in the container (supports secret and gcs types)"
   type = list(object({
     name        = string
-    type        = string # emptyDir|secret
+    type        = string # secret|gcs
     secret_name = optional(string)
+    bucket      = optional(string)
+    read_only   = optional(bool)
   }))
   default = []
 }
@@ -115,6 +117,13 @@ variable "startup_cpu_boost" {
   type        = bool
   default     = true
 }
+
+variable "vpc_connector" {
+  description = "Optional fully qualified VPC Access Connector name to use for egress (e.g., projects/<project>/locations/<region>/connectors/<name>). Use either this or vpc_network_interface, not both."
+  type        = string
+  default     = null
+}
+
 variable "invokers" {
   description = "Map of binding name to list of members for roles/run.invoker"
   type        = map(list(string))

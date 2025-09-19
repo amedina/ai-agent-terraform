@@ -7,7 +7,7 @@ This Terraform module provisions Google Cloud Run v2 services for serverless con
 - **Serverless Containers**: Deploy containerized applications without managing infrastructure
 - **Auto Scaling**: Automatic scaling from 0 to configured maximum instances
 - **VPC Connectivity**: Support for VPC network interfaces and egress control
-- **Volume Mounting**: Support for secrets and emptyDir volumes
+- **Volume Mounting**: Support for secrets and GCS volumes
 - **IAM Integration**: Configurable invoker permissions
 - **Resource Management**: CPU and memory limits with idle scaling
 - **Environment Variables**: Dynamic environment variable configuration
@@ -93,7 +93,6 @@ module "cloud_run" {
 ```
 
 ### Service with Volumes and Secrets
-
 ```hcl
 module "cloud_run" {
   source = "./modules/cloud-run"
@@ -108,10 +107,6 @@ module "cloud_run" {
       name        = "secrets-vol"
       type        = "secret"
       secret_name = "app-secrets"
-    },
-    {
-      name = "temp-storage"
-      type = "emptyDir"
     }
   ]
   
@@ -119,10 +114,6 @@ module "cloud_run" {
     {
       name       = "secrets-vol"
       mount_path = "/etc/secrets"
-    },
-    {
-      name       = "temp-storage"
-      mount_path = "/tmp/app"
     }
   ]
   
@@ -240,14 +231,24 @@ volumes = [
 ]
 ```
 
-### EmptyDir Volumes
-Temporary storage that exists for the lifetime of the service:
+
+### GCS Volumes
+Mount a Cloud Storage bucket directly into the container (read-only or read-write depending on your needs):
 
 ```hcl
 volumes = [
   {
-    name = "temp-storage"
-    type = "emptyDir"
+    name      = "gcs-bucket"
+    type      = "gcs"
+    bucket    = module.storage.bucket_name
+    read_only = false
+  }
+]
+
+volume_mounts = [
+  {
+    name       = "gcs-bucket"
+    mount_path = "/mnt/bucket"
   }
 ]
 ```

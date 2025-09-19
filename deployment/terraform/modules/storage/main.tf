@@ -17,7 +17,8 @@ resource "google_storage_bucket" "this" {
 }
 
 resource "google_storage_bucket_iam_member" "members" {
-  for_each = { for m in var.iam_members : "${m.role}-${m.member}" => m }
+  # Use static index-based keys to avoid unknown values in for_each keys during plan
+  for_each = { for idx, m in var.iam_members : tostring(idx) => m }
   bucket   = google_storage_bucket.this.name
   role     = each.value.role
   member   = each.value.member

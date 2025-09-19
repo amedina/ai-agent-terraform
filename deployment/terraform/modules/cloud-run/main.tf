@@ -15,25 +15,33 @@ resource "google_cloud_run_v2_service" "this" {
       for_each = var.volumes
       content {
         name = volumes.value.name
-        # Support GCS or Filestore via CSI drivers - for now just emptyDir / secret
-        dynamic "empty_dir" {
-          for_each = volumes.value.type == "emptyDir" ? [1] : []
-          content {}
-        }
+        # Supports secret and gcs volumes
         dynamic "secret" {
           for_each = volumes.value.type == "secret" ? [1] : []
           content { secret = volumes.value.secret_name }
         }
+        dynamic "gcs" {
+          for_each = volumes.value.type == "gcs" ? [1] : []
+          content {
+            bucket    = volumes.value.bucket
+            read_only = try(volumes.value.read_only, false)
+          }
+        }
       }
     }
 
-    vpc_access {
-      egress = var.vpc_egress
-      dynamic "network_interfaces" {
-        for_each = var.vpc_network_interface == null ? [] : [var.vpc_network_interface]
-        content {
-          network    = network_interfaces.value.network
-          subnetwork = network_interfaces.value.subnetwork
+    dynamic "vpc_access" {
+      # Render vpc_access only if either vpc_connector or vpc_network_interface is provided
+      for_each = var.vpc_connector == null && var.vpc_network_interface == null ? [] : [1]
+      content {
+        egress    = var.vpc_egress
+        connector = var.vpc_connector
+        dynamic "network_interfaces" {
+          for_each = var.vpc_network_interface == null ? [] : [var.vpc_network_interface]
+          content {
+            network    = network_interfaces.value["network"]
+            subnetwork = network_interfaces.value["subnetwork"]
+          }
         }
       }
     }
